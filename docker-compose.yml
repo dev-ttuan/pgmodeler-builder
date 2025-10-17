@@ -1,0 +1,27 @@
+services:
+  pgmodeler:
+    container_name: pgmodeler-builder
+    hostname: pgmodeler
+    image: pgmodeler-builder
+    
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        USER_ID: ${USER_ID:-1000}
+        GROUP_ID: ${GROUP_ID:-1000}
+    
+    env_file: .env
+    
+    volumes:
+      - .:/workspace
+      - /tmp/.X11-unix:/tmp/.X11-unix:ro
+      - pgmodeler-config:/home/pgmodeler/.config
+    
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    
+    command: pgmodeler
+
+volumes:
+  pgmodeler-config:
