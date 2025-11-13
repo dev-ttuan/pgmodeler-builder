@@ -10,5 +10,6 @@ cat > .env << EOF
 
 USER_ID=$(id -u)
 GROUP_ID=$(id -g)
+OS_TYPE=$([[ "$OSTYPE" == "darwin"* ]] && echo "macos" || echo "linux")
 DISPLAY=$([[ "$OSTYPE" == "darwin"* ]] && echo "host.docker.internal:0" || echo ":0")
 EOF

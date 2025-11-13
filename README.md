@@ -33,13 +33,18 @@ This project provides a containerized environment to build and run pgModeler fro
 2. **Setup the environment**:
 
    ```bash
-   chmod +x setup.sh
-   ./setup.sh
+   make setup
    ```
 
-3. **Build and run pgModeler**:
+3. **Start pgModeler**:
+
    ```bash
-   docker-compose up --build
+   make start
+   ```
+
+4. **Stop pgModeler** (when done):
+   ```bash
+   make stop
    ```
 
 ## Configuration
@@ -50,6 +55,7 @@ The `setup.sh` script automatically generates a `.env` file with:
 
 - `USER_ID`: Your user ID (auto-detected)
 - `GROUP_ID`: Your group ID (auto-detected)
+- `OS_TYPE`: Operating system type (`linux` or `macos`, auto-detected)
 - `DISPLAY`: X11 display configuration (auto-detected based on OS)
 
 ### Build Arguments
@@ -62,9 +68,22 @@ You can customize the build by modifying the `PGMODELER_REF` argument in the Doc
 
 ## Usage
 
+### Available Commands
+
+The project includes a Makefile with convenient commands:
+
+- `make setup` - Initialize environment and generate `.env` file
+- `make start` - Start pgModeler with automatic X11 setup
+- `make stop` - Stop pgModeler and clean up X11 permissions
+
 ### Running pgModeler
 
-After building, pgModeler will start automatically. The GUI should appear on your desktop.
+Use `make start` to launch pgModeler. The script will:
+
+- Automatically check and create `.env` if needed
+- Set up X11 forwarding based on your OS (Linux/macOS)
+- Start the Docker container
+- Display the GUI on your desktop
 
 ### File Access
 
@@ -80,13 +99,33 @@ You can also run pgModeler in command-line mode:
 docker-compose run --rm pgmodeler pgmodeler --help
 ```
 
+### Manual Docker Commands
+
+If you prefer to use Docker Compose directly:
+
+```bash
+# Setup environment
+./setup.sh
+
+# Start services
+docker-compose up -d
+
+# Stop services
+docker-compose down
+```
+
+**Note**: When using manual Docker commands, you'll need to handle X11 permissions yourself.
+
 ## Project Structure
 
 ```
 pgmodeler-builder/
 ├── Dockerfile          # Multi-stage build configuration
 ├── docker-compose.yml  # Service definition and volume mounts
+├── Makefile           # Convenient commands (setup, start, stop)
 ├── setup.sh           # Environment setup script
+├── start.sh           # Smart startup script with X11 handling
+├── stop.sh            # Cleanup script with X11 permission clearing
 ├── data/              # Directory for your database models
 ├── .env               # Auto-generated environment variables
 └── README.md          # This file
@@ -98,15 +137,23 @@ pgmodeler-builder/
 
 If pgModeler doesn't start with GUI:
 
-1. **Linux**: Ensure X11 forwarding is enabled:
+1. **Use the provided scripts**: `make start` automatically handles X11 setup for both Linux and macOS
+
+2. **Linux**: If using manual commands, ensure X11 forwarding is enabled:
 
    ```bash
    xhost +local:docker
    ```
 
-2. **macOS**: Make sure XQuartz is running and configured properly
+3. **macOS**: Make sure XQuartz is running and configured properly:
 
-3. **XCB Plugin Errors**: Uncomment the XCB libraries in the Dockerfile if you encounter X11 plugin errors
+   ```bash
+   xhost +localhost:docker
+   ```
+
+4. **XCB Plugin Errors**: Uncomment the XCB libraries in the Dockerfile if you encounter X11 plugin errors
+
+5. **Permission Issues**: Always use `make stop` to properly clean up X11 permissions
 
 ### Permission Issues
 
@@ -148,4 +195,3 @@ This project follows the same license as pgModeler. Please refer to the [pgModel
 
 - [pgModeler Official Website](https://pgmodeler.io/)
 - [pgModeler GitHub Repository](https://github.com/pgmodeler/pgmodeler)
-- [pgModeler Documentation](https://docs.pgmodeler.io/)
